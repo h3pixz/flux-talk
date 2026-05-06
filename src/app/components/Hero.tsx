@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import data from "../../locales/ru.json"
 
 export default function Hero() {
   return (
@@ -11,11 +12,10 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.2 }}
         >
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            Privacy starts with a key.
+            {data.hero.title}
           </h1>
           <p className="text-lg md:text-xl text-[#a3a3a3] max-w-2xl mx-auto">
-            Create a private room, generate a unique key, and start chatting
-            instantly. No registration required.
+            {data.hero.description}
           </p>
         </motion.div>
 
@@ -53,7 +53,7 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.6 }}
         >
           <span className="inline-block bg-[#1a1a1a] px-3 py-1 border border-[#262626] rounded-lg">
-            🔒 End-to-end encrypted by default
+            {data.hero.badge}
           </span>
         </motion.div>
       </div>
