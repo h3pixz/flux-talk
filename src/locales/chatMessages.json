@@ -1,0 +1,26 @@
+{
+    "roomId": "room: secure-chat-x7k9p2",
+    "messages": [
+        {
+            "user": "alice@flux:",
+            "color": "#10b981",
+            "text": "Hey, are you there?"
+        },
+        {
+            "user": "bob@flux:",
+            "color": "#06b6d4",
+            "text": "Yes! This is incredibly secure."
+        },
+        {
+            "user": "alice@flux:",
+            "color": "#10b981",
+            "text": "No traces, just us and the key."
+        },
+        {
+            "user": "bob@flux:",
+            "color": "#06b6d4",
+            "text": "Perfect. Let's discuss the project."
+        }
+    ],
+    "footerText": "Terminal-inspired interface. Message instantly. Leave no trace."
+}
