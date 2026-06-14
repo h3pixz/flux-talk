@@ -2,6 +2,7 @@ import Header from "./components/Header";
 import Hero from "./components/Hero";
 import FeaturePreview from "./components/FeaturePreview";
 import Pricing from "./components/Pricing";
+import Footer from "./components/Footer"
 
 export default function App() {
   return (
@@ -10,6 +11,7 @@ export default function App() {
       <Hero />
       <FeaturePreview />
       <Pricing />
+      <Footer />
     </div>
   );
 }
