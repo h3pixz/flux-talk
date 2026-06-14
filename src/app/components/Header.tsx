@@ -23,7 +23,7 @@ export default function Header() {
           </a>
         </nav>
 
-        <button className="px-4 py-2 bg-transparent border border-[#10b981] text-[#10b981] rounded-lg hover:bg-[#10b981]/10 transition-colors">
+        <button className="px-4 py-2 bg-transparent border border-[#10b981] text-[#10b981] rounded-lg hover:bg-[#10b981]/10 transition-colors cursor-pointer">
           Launch App
         </button>
       </div>
