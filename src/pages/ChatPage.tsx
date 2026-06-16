@@ -1,15 +1,21 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
+import { useNavigate } from "react-router";
 
 export default function ChatPage() {
   const [roomKey] = useState<string>("FLUX-X7K9P2");
   const [copied, setCopied] = useState(false);
+  const navigate = useNavigate();
 
   const handleCopyKey = () => {
     navigator.clipboard.writeText(roomKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleLeave = () => {
+    navigate("/");
   };
 
   return (
@@ -33,13 +39,19 @@ export default function ChatPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-[#262626] rounded-lg hover:border-[#10b981] transition-colors cursor-pointer"
-          onClick={handleCopyKey}
+          <button
+            className="flex items-center gap-2 px-4 py-2 bg-transparent border border-[#262626] rounded-lg hover:border-[#10b981] transition-colors cursor-pointer"
+            onClick={handleCopyKey}
           >
             <FaRegCopy />
-            <span>{copied ? "Copied!" : "Copy Key"}</span>
+            <span className="text-sm hidden md:inline">
+              {copied ? "Copied!" : "Copy Key"}
+            </span>
           </button>
-          <button className="px-4 py-2 bg-transparent border border-[#262626] text-[#a3a3a3] rounded-lg hover:border-red-500 hover:text-red-500 transition-colors cursor-pointer">
+          <button
+            className="px-4 py-2 bg-transparent border border-[#262626] text-[#a3a3a3] rounded-lg hover:border-red-500 hover:text-red-500 transition-colors cursor-pointer"
+            onClick={handleLeave}
+          >
             Leave Room
           </button>
         </div>
