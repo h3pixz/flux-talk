@@ -1,7 +1,17 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
 
 export default function ChatPage() {
+  const [roomKey] = useState<string>("FLUX-X7K9P2");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyKey = () => {
+    navigator.clipboard.writeText(roomKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div
       className="h-screen bg-[#121212] flex flex-col text-white"
@@ -18,14 +28,16 @@ export default function ChatPage() {
 
           <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-[#1a1a1a] border border-[#262626] rounded-lg">
             <span className="text-sm text-[#a3a3a3]">Room:</span>
-            <span className="text-sm text-[#10b981]">FLUX-X7K9P2</span>
+            <span className="text-sm text-[#10b981]">{roomKey}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-[#262626] rounded-lg hover:border-[#10b981] transition-colors cursor-pointer">
+          <button className="flex items-center gap-2 px-4 py-2 bg-transparent border border-[#262626] rounded-lg hover:border-[#10b981] transition-colors cursor-pointer"
+          onClick={handleCopyKey}
+          >
             <FaRegCopy />
-            <span>Copy Key</span>
+            <span>{copied ? "Copied!" : "Copy Key"}</span>
           </button>
           <button className="px-4 py-2 bg-transparent border border-[#262626] text-[#a3a3a3] rounded-lg hover:border-red-500 hover:text-red-500 transition-colors cursor-pointer">
             Leave Room
