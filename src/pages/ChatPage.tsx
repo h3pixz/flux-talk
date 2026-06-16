@@ -3,37 +3,16 @@ import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
 import { useNavigate } from "react-router";
 
+interface Message {
+  id: string;
+  nickname: string;
+  text: string;
+  timestamp: string;
+  isOwn: boolean;
+}
+
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      nickname: "alice",
-      text: "Hey everyone, glad we could connect securely.",
-      timestamp: "14:32:15",
-      isOwn: false,
-    },
-    {
-      id: "2",
-      nickname: "bob",
-      text: "This is incredibly private. No traces.",
-      timestamp: "14:33:42",
-      isOwn: false,
-    },
-    {
-      id: "3",
-      nickname: "you",
-      text: "Perfect for what we need to discuss.",
-      timestamp: "14:35:02",
-      isOwn: true,
-    },
-    {
-      id: "4",
-      nickname: "alice",
-      text: "Should we go over the project details?",
-      timestamp: "14:35:28",
-      isOwn: false,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const [roomKey] = useState<string>("FLUX-X7K9P2");
   const [copied, setCopied] = useState(false);
