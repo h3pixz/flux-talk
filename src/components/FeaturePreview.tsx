@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import chatData from "../../locales/chatMessages.json";
+import chatData from "../locales/chatMessages.json";
 
 export default function FeaturePreview() {
   return (

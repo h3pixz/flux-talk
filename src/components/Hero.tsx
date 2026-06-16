@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import data from "../../locales/ru.json"
+import data from "../locales/ru.json"
 
 export default function Hero() {
   return (
