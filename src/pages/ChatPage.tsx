@@ -1,12 +1,45 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
 import { useNavigate } from "react-router";
 
 export default function ChatPage() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      nickname: "alice",
+      text: "Hey everyone, glad we could connect securely.",
+      timestamp: "14:32:15",
+      isOwn: false,
+    },
+    {
+      id: "2",
+      nickname: "bob",
+      text: "This is incredibly private. No traces.",
+      timestamp: "14:33:42",
+      isOwn: false,
+    },
+    {
+      id: "3",
+      nickname: "you",
+      text: "Perfect for what we need to discuss.",
+      timestamp: "14:35:02",
+      isOwn: true,
+    },
+    {
+      id: "4",
+      nickname: "alice",
+      text: "Should we go over the project details?",
+      timestamp: "14:35:28",
+      isOwn: false,
+    },
+  ]);
+
   const [roomKey] = useState<string>("FLUX-X7K9P2");
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [inputText, setInputText] = useState("");
 
   const handleCopyKey = () => {
     navigator.clipboard.writeText(roomKey);
@@ -16,6 +49,32 @@ export default function ChatPage() {
 
   const handleLeave = () => {
     navigate("/");
+  };
+
+  const handleSendMessage = () => {
+    if (inputText.trim()) {
+      const now = new Date();
+      const timestamp = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+
+      setMessages([
+        ...messages,
+        {
+          id: Date.now().toString(),
+          nickname: "you",
+          text: inputText,
+          timestamp,
+          isOwn: true,
+        },
+      ]);
+      setInputText("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   return (
@@ -56,6 +115,75 @@ export default function ChatPage() {
           </button>
         </div>
       </motion.header>
+
+      <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="max-w-4xl mx-auto space-y-4">
+          {messages.map((message, index) => (
+            <motion.div
+              key={message.id}
+              className="flex gap-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
+              <span className="text-[#525252] shrink-0 ">
+                [{message.timestamp}]
+              </span>
+              <span
+                className={`shrink-0 ${message.isOwn ? "text-[#10b981]" : "text-[#06b6d4]"}`}
+              >
+                {message.nickname}:
+              </span>
+              <span className="text-[#e5e5e5]">{message.text}</span>
+            </motion.div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      <motion.div
+        className="px-6 py-4 border-t border-[#262626] bg-[#121212]"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+        <div className="max-w-4xl mx-auto">
+          <div className="relative flex items-center gap-2">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type message..."
+                className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#262626] rounded-lg text-white placeholder:text-[#525252] focus:outline-none focus:border-[#10b981] focus:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all pr-12"
+              />
+              <button
+                onClick={handleSendMessage}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#10b981] rounded-lg hover:bg-[#0ea572] transition-colors"
+              >
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-2 text-xs text-[#525252] text-center">
+            🔒 Messages are end-to-end encrypted • No logs • No history
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
