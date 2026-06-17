@@ -103,7 +103,7 @@ export default function ChatPage() {
         </div>
       </motion.header>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.map((message) => (
             <motion.div
