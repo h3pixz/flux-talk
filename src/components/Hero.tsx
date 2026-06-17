@@ -1,7 +1,25 @@
 import { motion } from "framer-motion";
-import data from "../locales/ru.json"
+import data from "../locales/ru.json";
+import { useNavigate } from "react-router";
 
 export default function Hero() {
+  const navigate = useNavigate();
+
+  const generateRoomKey = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let result = "";
+
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `FLUX-${result}`;
+  };
+
+  const handleCreateRoom = () => {
+    const newRoomKey = generateRoomKey();
+    navigate(`/chatRoom/${newRoomKey}`);
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center">
       <div className="max-w-4xl w-full">
@@ -30,7 +48,10 @@ export default function Hero() {
               placeholder="Create New Room"
               className="w-full border border-[#262626] px-6 py-4 rounded-xl bg-[#1a1a1a] text-white placeholder:text-[#525252] focus:outline-none focus:border-[#10b981] focus:shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all"
             ></input>
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-[#10b981] px-4 py-2 rounded-lg hover:bg-[#0ea572] transition-colors">
+            <button
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-[#10b981] px-4 py-2 rounded-lg hover:bg-[#0ea572] transition-colors cursor-pointer"
+              onClick={handleCreateRoom}
+            >
               Create
             </button>
           </div>
@@ -40,7 +61,7 @@ export default function Hero() {
               placeholder="Enter Room Key"
               className="w-full border border-[#262626] px-6 py-4 rounded-xl bg-[#1a1a1a] text-white placeholder:text-[#525252] focus:outline-none focus:border-[#10b981] focus:shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all"
             ></input>
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-[#10b981] px-4 py-2 rounded-lg hover:bg-[#0ea572] transition-colors">
+            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-[#10b981] px-4 py-2 rounded-lg hover:bg-[#0ea572] transition-colors cursor-pointer">
               Join
             </button>
           </div>

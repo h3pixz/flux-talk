@@ -8,7 +8,7 @@ export const router = createBrowserRouter([
         Component: HomePage,
     },
     {
-        path: "/chatroom",
+        path: "/chatroom/:roomKey",
         Component: ChatPage,
     },
 ])

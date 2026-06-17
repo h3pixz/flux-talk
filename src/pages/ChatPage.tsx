@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
 import { useNavigate } from "react-router";
+import { useParams } from "react-router";
 
 interface Message {
   id: string;
@@ -14,13 +15,16 @@ interface Message {
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const [roomKey] = useState<string>("FLUX-X7K9P2");
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState("");
 
+  const {roomKey} = useParams();
+
   const handleCopyKey = () => {
+    if(!roomKey) return;
+
     navigator.clipboard.writeText(roomKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
