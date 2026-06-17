@@ -1,19 +1,10 @@
 import { motion } from "framer-motion";
 import data from "../locales/ru.json";
 import { useNavigate } from "react-router";
+import { generateRoomKey } from "../ultils/room";
 
 export default function Hero() {
   const navigate = useNavigate();
-
-  const generateRoomKey = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let result = "";
-
-    for (let i = 0; i < 6; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return `FLUX-${result}`;
-  };
 
   const handleCreateRoom = () => {
     const newRoomKey = generateRoomKey();
