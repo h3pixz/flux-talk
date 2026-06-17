@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
 import { useNavigate } from "react-router";
@@ -20,10 +20,10 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState("");
 
-  const {roomKey} = useParams();
+  const { roomKey } = useParams();
 
   const handleCopyKey = () => {
-    if(!roomKey) return;
+    if (!roomKey) return;
 
     navigator.clipboard.writeText(roomKey);
     setCopied(true);
@@ -52,6 +52,10 @@ export default function ChatPage() {
       setInputText("");
     }
   };
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -101,13 +105,13 @@ export default function ChatPage() {
 
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="max-w-4xl mx-auto space-y-4">
-          {messages.map((message, index) => (
+          {messages.map((message) => (
             <motion.div
               key={message.id}
               className="flex gap-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
+              transition={{ duration: 0.3 }}
             >
               <span className="text-[#525252] shrink-0 ">
                 [{message.timestamp}]
