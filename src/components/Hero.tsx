@@ -2,13 +2,28 @@ import { motion } from "framer-motion";
 import data from "../locales/ru.json";
 import { useNavigate } from "react-router";
 import { generateRoomKey } from "../ultils/room";
+import { useState } from "react";
 
 export default function Hero() {
   const navigate = useNavigate();
+  const [roomInput, setRoomInput] = useState("");
 
   const handleCreateRoom = () => {
     const newRoomKey = generateRoomKey();
     navigate(`/chatRoom/${newRoomKey}`);
+  };
+
+  const handleJoinRoom = () => {
+    if (roomInput.trim()) {
+      const formattedKey = roomInput.trim().toUpperCase();
+      navigate(`/chatroom/${formattedKey}`);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleJoinRoom();
+    }
   };
 
   return (
@@ -51,8 +66,14 @@ export default function Hero() {
             <input
               placeholder="Enter Room Key"
               className="w-full border border-[#262626] px-6 py-4 rounded-xl bg-[#1a1a1a] text-white placeholder:text-[#525252] focus:outline-none focus:border-[#10b981] focus:shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all"
+              value={roomInput}
+              onChange={(e) => setRoomInput(e.target.value)}
+              onKeyDown={handleKeyPress}
             ></input>
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-[#10b981] px-4 py-2 rounded-lg hover:bg-[#0ea572] transition-colors cursor-pointer">
+            <button
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-[#10b981] px-4 py-2 rounded-lg hover:bg-[#0ea572] transition-colors cursor-pointer"
+              onClick={handleJoinRoom}
+            >
               Join
             </button>
           </div>

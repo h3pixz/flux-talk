@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { useParams } from "react-router";
+import { supabase } from "../ultils/supabaseClient";
+import { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Message {
   id: string;
@@ -21,6 +23,7 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState("");
 
   const { roomKey } = useParams();
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const handleCopyKey = () => {
     if (!roomKey) return;
@@ -34,28 +37,76 @@ export default function ChatPage() {
     navigate("/");
   };
 
-  const handleSendMessage = () => {
-    if (inputText.trim()) {
+  const handleSendMessage = async () => {
+    if (inputText.trim() && channelRef.current) {
       const now = new Date();
       const timestamp = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
 
-      setMessages([
-        ...messages,
+      const messageId = Date.now().toString();
+
+      const messagePayload = {
+        id: messageId,
+        nickname: "anonymous",
+        text: inputText,
+        timestamp: timestamp,
+      };
+
+      await channelRef.current.send({
+        type: "broadcast",
+        event: "message",
+        payload: messagePayload,
+      });
+
+      setMessages((prev) => [
+        ...prev,
         {
-          id: Date.now().toString(),
+          ...messagePayload,
           nickname: "you",
-          text: inputText,
-          timestamp,
           isOwn: true,
         },
       ]);
+
       setInputText("");
+
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+      }, 0);
     }
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!roomKey) return;
+
+    const channel = supabase.channel(`room_${roomKey}`, {
+      config: {
+        broadcast: { self: false },
+      },
+    });
+
+    channel
+      .on("broadcast", { event: "message" }, (payload) => {
+        const incomingMessage: Message = {
+          id: payload.payload.id,
+          nickname: payload.payload.nickname,
+          text: payload.payload.text,
+          timestamp: payload.payload.timestamp,
+          isOwn: false,
+        };
+
+        setMessages((prev) => [...prev, incomingMessage]);
+      })
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          console.log("Успешно подключились к комнате:", roomKey);
+        }
+      });
+
+    channelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomKey]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
