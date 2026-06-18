@@ -17,13 +17,16 @@ interface Message {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [myNickname] = useState<string>(
+    () => `FluxUser-${Math.floor(Math.random() * 900) + 100}`,
+  );
 
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState("");
 
-  const { roomKey } = useParams();
+  const { roomKey } = useParams<string>();
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const handleCopyKey = () => {
@@ -47,7 +50,7 @@ export default function ChatPage() {
 
       const messagePayload = {
         id: messageId,
-        nickname: "anonymous",
+        nickname: myNickname,
         text: inputText,
         timestamp: timestamp,
       };
@@ -96,10 +99,47 @@ export default function ChatPage() {
 
         setMessages((prev) => [...prev, incomingMessage]);
       })
-      .subscribe((status) => {
+      .on("presence", { event: "join" }, ({ newPresences }) => {
+        newPresences.forEach((presence: Record<string, unknown>) => {
+          if (presence.nickname === myNickname) return;
+
+          const systemMessage: Message = {
+            id: `sys-${Date.now()}-${Math.random()}`,
+            nickname: "SYSTEM",
+            text: `${presence.nickname} присоединился только что`,
+            timestamp: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+            isOwn: false,
+          };
+
+          setMessages((prev) => [...prev, systemMessage]);
+        });
+      })
+      .on("presence", { event: "leave" }, ({ leftPresences }) => {
+        leftPresences.forEach((presence: Record<string, unknown>) => {
+          const systemMessage: Message = {
+            id: `sys-${Date.now()}-${Math.random()}`,
+            nickname: "SYSTEM",
+            text: `${presence.nickname} покинул чат`,
+            timestamp: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+            isOwn: false,
+          };
+          setMessages((prev) => [...prev, systemMessage]);
+        });
+      })
+      .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           console.log("Успешно подключились к комнате:", roomKey);
           toast.success(`Successful!`);
+
+          await channel.track({ nickname: myNickname });
         }
       });
 
@@ -108,7 +148,7 @@ export default function ChatPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [roomKey]);
+  }, [roomKey, myNickname]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -164,25 +204,48 @@ export default function ChatPage() {
 
       <div className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
         <div className="max-w-4xl mx-auto space-y-4">
-          {messages.map((message) => (
-            <motion.div
-              key={message.id}
-              className="flex gap-3"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <span className="text-[#525252] shrink-0 ">
-                [{message.timestamp}]
-              </span>
-              <span
-                className={`shrink-0 ${message.isOwn ? "text-[#10b981]" : "text-[#06b6d4]"}`}
+          {messages.map((message) => {
+            if (message.nickname === "SYSTEM") {
+              return (
+                <motion.div
+                  key={message.id}
+                  className="flex items-center justify-center gap-2 py-1 my-1 text-xs select-none"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <span className="text-neutral-600">
+                    [{message.timestamp}]
+                  </span>
+                  <span className="text-amber-500/80 font-medium tracking-wide">
+                    • {message.text} •
+                  </span>
+                </motion.div>
+              );
+            }
+
+            return (
+              <motion.div
+                key={message.id}
+                className="flex gap-3"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
               >
-                {message.nickname}:
-              </span>
-              <span className="text-[#e5e5e5]">{message.text}</span>
-            </motion.div>
-          ))}
+                <span className="text-[#525252] shrink-0 ">
+                  [{message.timestamp}]
+                </span>
+                <span
+                  className={`shrink-0 ${
+                    message.isOwn ? "text-[#10b981]" : "text-[#06b6d4]"
+                  }`}
+                >
+                  {message.nickname}:
+                </span>
+                <span className="text-[#e5e5e5]">{message.text}</span>
+              </motion.div>
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
       </div>
