@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 import { useParams } from "react-router";
 import { supabase } from "../ultils/supabaseClient";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import { ToastContainer, toast } from "react-toastify";
 
 interface Message {
   id: string;
@@ -98,6 +99,7 @@ export default function ChatPage() {
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
           console.log("Успешно подключились к комнате:", roomKey);
+          toast.success(`Successful!`);
         }
       });
 
@@ -151,6 +153,12 @@ export default function ChatPage() {
           >
             Leave Room
           </button>
+          <ToastContainer
+            toastClassName={() =>
+              "relative flex p-4 min-h-10 rounded-md justify-between overflow-hidden cursor-pointer bg-slate-900 text-slate-100 shadow-lg mb-4"
+            }
+            autoClose={1500}
+          />
         </div>
       </motion.header>
 
