@@ -120,8 +120,10 @@ export default function ChatPage() {
       })
       .on("presence", { event: "leave" }, ({ leftPresences }) => {
         leftPresences.forEach((presence: Record<string, unknown>) => {
+          if (presence.nickname === myNickname) return;
+
           const systemMessage: Message = {
-            id: `sys-${Date.now()}-${Math.random()}`,
+            id: crypto.randomUUID(),
             nickname: "SYSTEM",
             text: `${presence.nickname} покинул чат`,
             timestamp: new Date().toLocaleTimeString([], {
