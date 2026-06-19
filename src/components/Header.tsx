@@ -21,10 +21,10 @@ export default function Header() {
         <span className="font-semibold tracking-tight text-xl">Flux Talk</span>
 
         <nav className="flex items-center gap-8">
-          <a className="text-sm text-[#a3a3a3] hover:text-white transition-colors cursor-pointer">
+          <a className="text-sm text-[#a3a3a3] hover:text-white transition-colors cursor-pointer" href="#features">
             Features
           </a>
-          <a className="text-sm text-[#a3a3a3] hover:text-white transition-colors cursor-pointer">
+          <a className="text-sm text-[#a3a3a3] hover:text-white transition-colors cursor-pointer" href="#pricing">
             Pricing
           </a>
           <a className="text-sm text-[#a3a3a3] hover:text-white transition-colors cursor-pointer">

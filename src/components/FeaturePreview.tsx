@@ -3,7 +3,7 @@ import chatData from "../locales/chatMessages.json";
 
 export default function FeaturePreview() {
   return (
-    <section className="py-24 px-6">
+    <section className="py-24 px-6" id="features">
       <div className="max-w-2xl mx-auto">
         <motion.div
           className="bg-[#1a1a1a] border border-[#262626] rounded-xl overflow-hidden"

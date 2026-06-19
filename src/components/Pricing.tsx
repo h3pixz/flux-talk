@@ -28,7 +28,7 @@ const plans = [
 
 export default function Pricing() {
   return (
-    <section className="py-24 px-6">
+    <section className="py-24 px-6" id="pricing">
       <div className="max-w-7xl mx-auto">
         <motion.div
           className="text-center mb-16"
