@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { useParams } from "react-router";
 import { supabase } from "../ultils/supabaseClient";
 import { RealtimeChannel } from "@supabase/supabase-js";
@@ -16,13 +16,15 @@ interface Message {
 }
 
 export default function ChatPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [myNickname] = useState<string>(
-    () => `FluxUser-${Math.floor(Math.random() * 900) + 100}`,
-  );
+
+  const [username] = useState<string>(() => {
+    return location.state?.username ?? `FluxUser-${Math.floor(Math.random() * 900) + 100}`;
+  });
 
   const [copied, setCopied] = useState(false);
-  const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState("");
 
@@ -50,7 +52,7 @@ export default function ChatPage() {
 
       const messagePayload = {
         id: messageId,
-        nickname: myNickname,
+        nickname: username,
         text: inputText,
         timestamp: timestamp,
       };
@@ -101,7 +103,7 @@ export default function ChatPage() {
       })
       .on("presence", { event: "join" }, ({ newPresences }) => {
         newPresences.forEach((presence: Record<string, unknown>) => {
-          if (presence.nickname === myNickname) return;
+          if (presence.nickname === username) return;
 
           const systemMessage: Message = {
             id: `sys-${Date.now()}-${Math.random()}`,
@@ -120,7 +122,7 @@ export default function ChatPage() {
       })
       .on("presence", { event: "leave" }, ({ leftPresences }) => {
         leftPresences.forEach((presence: Record<string, unknown>) => {
-          if (presence.nickname === myNickname) return;
+          if (presence.nickname === username) return;
 
           const systemMessage: Message = {
             id: crypto.randomUUID(),
@@ -141,7 +143,7 @@ export default function ChatPage() {
           console.log("Успешно подключились к комнате:", roomKey);
           toast.success(`Successful!`);
 
-          await channel.track({ nickname: myNickname });
+          await channel.track({ nickname: username });
         }
       });
 
@@ -150,7 +152,7 @@ export default function ChatPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [roomKey, myNickname]);
+  }, [roomKey, username]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
