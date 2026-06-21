@@ -6,6 +6,7 @@ import { useParams } from "react-router";
 import { supabase } from "../utils/supabaseClient";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
+import { encryptMessage, decryptMessage } from "../utils/crypto";
 
 interface Message {
   id: string;
@@ -21,7 +22,10 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const [username] = useState<string>(() => {
-    return location.state?.username ?? `FluxUser-${Math.floor(Math.random() * 900) + 100}`;
+    return (
+      location.state?.username ??
+      `FluxUser-${Math.floor(Math.random() * 900) + 100}`
+    );
   });
 
   const [copied, setCopied] = useState(false);
@@ -44,39 +48,45 @@ export default function ChatPage() {
   };
 
   const handleSendMessage = async () => {
-    if (inputText.trim() && channelRef.current) {
+    if (inputText.trim() && channelRef.current && roomKey) {
       const now = new Date();
       const timestamp = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+      const messageId = crypto.randomUUID();
 
-      const messageId = Date.now().toString();
+      try {
+        const encryptedText = await encryptMessage(inputText, roomKey);
 
-      const messagePayload = {
-        id: messageId,
-        nickname: username,
-        text: inputText,
-        timestamp: timestamp,
-      };
+        const messagePayload = {
+          id: messageId,
+          nickname: username,
+          text: encryptedText,
+          timestamp: timestamp,
+        };
 
-      await channelRef.current.send({
-        type: "broadcast",
-        event: "message",
-        payload: messagePayload,
-      });
+        await channelRef.current.send({
+          type: "broadcast",
+          event: "message",
+          payload: messagePayload,
+        });
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...messagePayload,
-          nickname: "you",
-          isOwn: true,
-        },
-      ]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...messagePayload,
+            text: inputText,
+            nickname: "you",
+            isOwn: true,
+          },
+        ]);
 
-      setInputText("");
+        setInputText("");
 
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-      }, 0);
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+        }, 0);
+      } catch {
+        toast.error("Failed to encrypt message");
+      }
     }
   };
 
@@ -90,16 +100,32 @@ export default function ChatPage() {
     });
 
     channel
-      .on("broadcast", { event: "message" }, (payload) => {
-        const incomingMessage: Message = {
-          id: payload.payload.id,
-          nickname: payload.payload.nickname,
-          text: payload.payload.text,
-          timestamp: payload.payload.timestamp,
-          isOwn: false,
-        };
+      .on("broadcast", { event: "message" }, async (payload) => {
+        try {
+          const decryptedText = await decryptMessage(
+            payload.payload.text,
+            roomKey,
+          );
 
-        setMessages((prev) => [...prev, incomingMessage]);
+          const incomingMessage: Message = {
+            id: payload.payload.id,
+            nickname: payload.payload.nickname,
+            text: decryptedText,
+            timestamp: payload.payload.timestamp,
+            isOwn: false,
+          };
+
+          setMessages((prev) => [...prev, incomingMessage]);
+        } catch {
+          const badMessage: Message = {
+            id: payload.payload.id,
+            nickname: payload.payload.nickname,
+            text: "🚨 [Не удалось расшифровать сообщение. Ошибка ключа]",
+            timestamp: payload.payload.timestamp,
+            isOwn: false,
+          };
+          setMessages((prev) => [...prev, badMessage]);
+        }
       })
       .on("presence", { event: "join" }, ({ newPresences }) => {
         newPresences.forEach((presence: Record<string, unknown>) => {
