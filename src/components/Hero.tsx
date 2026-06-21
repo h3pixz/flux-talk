@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import data from "../locales/ru.json";
 import { useNavigate } from "react-router";
-import { generateRoomKey } from "../ultils/room";
+import { generateRoomKey } from "../utils/room";
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 

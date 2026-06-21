@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { FaRegCopy } from "react-icons/fa";
 import { useNavigate, useLocation } from "react-router";
 import { useParams } from "react-router";
-import { supabase } from "../ultils/supabaseClient";
+import { supabase } from "../utils/supabaseClient";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { ToastContainer, toast } from "react-toastify";
 
