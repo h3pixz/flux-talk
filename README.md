@@ -1,73 +1,138 @@
-# React + TypeScript + Vite
+# Flux Talk
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Приватный чат в реальном времени без регистрации. Создайте комнату, поделитесь ключом — и общайтесь. Сообщения шифруются на клиенте и не сохраняются на сервере.
 
-Currently, two official plugins are available:
+## Возможности
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Комнаты по ключу** — уникальный ключ вида `FLUX-XXXXXX` для входа в чат
+- **Шифрование на клиенте** — AES-GCM (Web Crypto API), ключ выводится из room key через SHA-256
+- **Realtime** — доставка сообщений через Supabase Realtime (broadcast + presence)
+- **Без истории** — сообщения живут только в сессии браузера
+- **Индикатор набора текста** — видно, когда другие участники печатают
+- **Presence** — уведомления о входе и выходе участников
+- **Landing page** — главная с описанием, превью интерфейса и блоком тарифов
 
-## React Compiler
+## Стек
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Категория | Технологии |
+|-----------|------------|
+| Frontend | React 19, TypeScript, Vite 8 |
+| Стили | Tailwind CSS 4, Framer Motion |
+| Роутинг | React Router 7 |
+| Backend / Realtime | Supabase (Realtime Channels) |
+| Криптография | Web Crypto API (AES-GCM) |
+| Деплой | Vercel |
 
-## Expanding the ESLint configuration
+## Как это работает
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+┌─────────────┐     зашифрованное сообщение      ┌──────────────┐
+│  Браузер A  │ ───────────────────────────────► │   Supabase   │
+│  (encrypt)  │         broadcast channel        │   Realtime   │
+└─────────────┘                                  └──────────────┘
+       ▲                                                  │
+       │              room key (не передаётся              │
+       │              через сервер)                       ▼
+┌─────────────┐     зашифрованное сообщение      ┌──────────────┐
+│  Браузер B  │ ◄─────────────────────────────── │   channel    │
+│  (decrypt)  │                                  │  room_{key}  │
+└─────────────┘                                  └──────────────┘
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. Пользователь создаёт комнату или вводит существующий ключ на главной странице.
+2. Ключ комнаты используется как секрет для AES-GCM — сервер видит только зашифрованный payload.
+3. Supabase Realtime передаёт broadcast-события (`message`, `typing`) и отслеживает presence.
+4. При перезагрузке страницы история сообщений теряется — она хранится только в памяти клиента.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Быстрый старт
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Требования
+
+- Node.js 18+
+- Аккаунт [Supabase](https://supabase.com) с включённым Realtime
+
+### Установка
+
+```bash
+git clone <repository-url>
+cd flux-talk
+npm install
 ```
+
+### Переменные окружения
+
+Создайте файл `.env` в корне проекта:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Значения берутся из **Project Settings → API** в панели Supabase.
+
+### Запуск
+
+```bash
+# режим разработки
+npm run dev
+
+# сборка для production
+npm run build
+
+# предпросмотр production-сборки
+npm run preview
+
+# линтер
+npm run lint
+```
+
+Приложение по умолчанию доступно на `http://localhost:5173`.
+
+## Использование
+
+1. Откройте главную страницу.
+2. Введите никнейм (необязательно — будет сгенерирован автоматически).
+3. Нажмите **Create**, чтобы создать новую комнату, или введите ключ и нажмите **Join**.
+4. Скопируйте ключ комнаты и отправьте собеседнику — без него сообщения нельзя расшифровать.
+5. Для выхода нажмите **Leave Room**.
+
+## Структура проекта
+
+```
+flux-talk/
+├── src/
+│   ├── app/              # Точка входа приложения
+│   ├── components/       # UI-компоненты (Header, Hero, Pricing, …)
+│   ├── locales/          # Тексты интерфейса
+│   ├── pages/            # HomePage, ChatPage
+│   ├── styles/           # Глобальные стили, Tailwind, тема
+│   └── utils/
+│       ├── crypto.tsx    # Шифрование / расшифровка сообщений
+│       ├── room.tsx      # Генерация ключей комнат
+│       └── supabaseClient.tsx
+├── vercel.json           # SPA rewrite для Vercel
+└── vite.config.ts
+```
+
+## Маршруты
+
+| Путь | Описание |
+|------|----------|
+| `/` | Главная страница |
+| `/chatroom/:roomKey` | Комната чата |
+
+## Деплой
+
+Проект настроен для деплоя на [Vercel](https://vercel.com). Файл `vercel.json` перенаправляет все запросы на `index.html` для корректной работы SPA-роутинга.
+
+Не забудьте добавить переменные окружения `VITE_SUPABASE_URL` и `VITE_SUPABASE_ANON_KEY` в настройках проекта на Vercel.
+
+## Безопасность
+
+- Шифрование выполняется **только на клиенте**; Supabase передаёт ciphertext, но не имеет доступа к plaintext.
+- Room key — единственный секрет. Не публикуйте его в открытых каналах.
+- Это учебный / демо-проект: для production-сценариев потребуется аудит криптографии, управление ключами, защита от MITM и другие меры.
+
+## Лицензия
+
+Проект распространяется как private (`"private": true` в `package.json`). Уточните условия использования у автора репозитория.
