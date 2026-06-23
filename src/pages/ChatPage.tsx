@@ -31,13 +31,14 @@ export default function ChatPage() {
   const [copied, setCopied] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState("");
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+  const typingTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const { roomKey } = useParams<string>();
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const handleCopyKey = () => {
     if (!roomKey) return;
-
     navigator.clipboard.writeText(roomKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -45,6 +46,18 @@ export default function ChatPage() {
 
   const handleLeave = () => {
     navigate("/");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputText(e.target.value);
+
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: "broadcast",
+        event: "typing",
+        payload: { nickname: username },
+      });
+    }
   };
 
   const handleSendMessage = async () => {
@@ -127,6 +140,23 @@ export default function ChatPage() {
           setMessages((prev) => [...prev, badMessage]);
         }
       })
+      .on("broadcast", { event: "typing" }, (payload) => {
+        const nick = payload.payload.nickname;
+        if (nick === username) return;
+
+        setTypingUsers((prev) => new Set(prev).add(nick));
+
+        if (typingTimeoutRef.current[nick]) {
+          clearTimeout(typingTimeoutRef.current[nick]);
+        }
+        typingTimeoutRef.current[nick] = setTimeout(() => {
+          setTypingUsers((prev) => {
+            const next = new Set(prev);
+            next.delete(nick);
+            return next;
+          });
+        }, 2000);
+      })
       .on("presence", { event: "join" }, ({ newPresences }) => {
         newPresences.forEach((presence: Record<string, unknown>) => {
           if (presence.nickname === username) return;
@@ -168,7 +198,6 @@ export default function ChatPage() {
         if (status === "SUBSCRIBED") {
           console.log("Успешно подключились к комнате:", roomKey);
           toast.success(`Successful!`);
-
           await channel.track({ nickname: username });
         }
       });
@@ -262,7 +291,7 @@ export default function ChatPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <span className="text-[#525252] shrink-0 ">
+                <span className="text-[#525252] shrink-0">
                   [{message.timestamp}]
                 </span>
                 <span
@@ -287,12 +316,24 @@ export default function ChatPage() {
         transition={{ duration: 0.4, delay: 0.2 }}
       >
         <div className="max-w-4xl mx-auto">
+          {typingUsers.size > 0 && (
+            <div className="mb-2 text-xs text-[#a3a3a3] flex items-center gap-2">
+              <span className="flex gap-0.5">
+                <span className="w-1 h-1 bg-[#10b981] rounded-full animate-bounce [animation-delay:0ms]" />
+                <span className="w-1 h-1 bg-[#10b981] rounded-full animate-bounce [animation-delay:150ms]" />
+                <span className="w-1 h-1 bg-[#10b981] rounded-full animate-bounce [animation-delay:300ms]" />
+              </span>
+              {Array.from(typingUsers).join(", ")}{" "}
+              {typingUsers.size === 1 ? "печатает" : "печатают"}...
+            </div>
+          )}
+
           <div className="relative flex items-center gap-2">
             <div className="flex-1 relative">
               <input
                 type="text"
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Type message..."
                 className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#262626] rounded-lg text-white placeholder:text-[#525252] focus:outline-none focus:border-[#10b981] focus:shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-all pr-12"
@@ -326,3 +367,4 @@ export default function ChatPage() {
     </div>
   );
 }
+
