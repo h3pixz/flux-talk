@@ -32,7 +32,9 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [inputText, setInputText] = useState("");
   const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
-  const typingTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const typingTimeoutRef = useRef<
+    Record<string, ReturnType<typeof setTimeout>>
+  >({});
 
   const { roomKey } = useParams<string>();
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -93,10 +95,6 @@ export default function ChatPage() {
         ]);
 
         setInputText("");
-
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
-        }, 0);
       } catch {
         toast.error("Failed to encrypt message");
       }
@@ -203,11 +201,17 @@ export default function ChatPage() {
       });
 
     channelRef.current = channel;
+    const typingCurrentTimeout = typingTimeoutRef.current;
 
     return () => {
       supabase.removeChannel(channel);
+      Object.values(typingCurrentTimeout).forEach(clearTimeout);
     };
   }, [roomKey, username]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth"});
+  }, [messages]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -367,4 +371,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
