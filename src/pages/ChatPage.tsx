@@ -189,6 +189,7 @@ export default function ChatPage() {
             }),
             isOwn: false,
           };
+          
           setMessages((prev) => [...prev, systemMessage]);
         });
       })
