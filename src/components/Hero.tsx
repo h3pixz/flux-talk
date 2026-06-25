@@ -78,7 +78,7 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          <div className="relative group">
+          <div className="relative group w-full max-w-xs mx-auto md:max-w-none md:mx-0">
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -94,7 +94,7 @@ export default function Hero() {
             </button>
           </div>
 
-          <div className="relative group">
+          <div className="relative group w-full max-w-xs mx-auto md:max-w-none md:mx-0">
             <input
               placeholder="Enter Room Key"
               className="w-full border border-[#262626] px-6 py-4 rounded-xl bg-[#1a1a1a] text-white placeholder:text-[#525252] focus:outline-none focus:border-[#10b981] focus:shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-all"

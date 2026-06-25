@@ -11,7 +11,7 @@ export default function Header() {
       <div className="flex items-center justify-between px-6 py-4 mx-auto max-w-7xl">
         <span className="font-semibold tracking-tight text-xl">Flux Talk</span>
 
-        <nav className="flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-4 md:gap-8">
           <a
             className="text-sm text-[#a3a3a3] hover:text-white transition-colors cursor-pointer"
             href="#features"
